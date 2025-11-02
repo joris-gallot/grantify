@@ -9,6 +9,8 @@
   "scripts": {
     "lint": "eslint packages",
     "lint:fix": "eslint --fix packages",
+    "typecheck": "pnpm -r typecheck",
+    "build": "pnpm -r build",
     "build:core": "pnpm --filter @grantify/core build"
   },
   "devDependencies": {
