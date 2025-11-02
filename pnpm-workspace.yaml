@@ -1,0 +1,7 @@
+packages:
+  - packages/*
+
+catalog:
+  unbuild: ^3.6.1
+  "@types/node": ^22.18.0
+  typescript: ^5.9.3

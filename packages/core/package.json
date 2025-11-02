@@ -1,0 +1,42 @@
+{
+  "name": "@grantify/core",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Lightweight framework-agnostic RBAC and permission management toolkit",
+  "author": "Joris Gallot",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joris-gallot/grantify.git"
+  },
+  "keywords": [
+    "rbac",
+    "acl",
+    "access-control",
+    "permissions",
+    "roles",
+    "authorization",
+    "auth",
+    "security"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "unbuild": "catalog:"
+  }
+}
