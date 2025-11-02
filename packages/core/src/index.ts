@@ -1,1 +1,2 @@
-console.log("grantify")
+// eslint-disable-next-line no-console
+console.log('grantify')
