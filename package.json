@@ -7,14 +7,21 @@
     "node": "24.10.0"
   },
   "scripts": {
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
     "lint": "eslint packages",
     "lint:fix": "eslint --fix packages",
     "typecheck": "pnpm -r typecheck",
     "build": "pnpm -r build",
-    "build:core": "pnpm --filter @grantify/core build"
+    "build:core": "pnpm --filter @grantify/core build",
+    "build:core:watch": "pnpm --filter @grantify/core build --watch"
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",
-    "eslint": "catalog:"
+    "eslint": "catalog:",
+    "@vitest/coverage-istanbul": "catalog:test",
+    "@vitest/ui": "catalog:test",
+    "vitest": "catalog:test"
   }
 }
