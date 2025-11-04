@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { assertType, describe, expect, it } from 'vitest'
 import { createGrantify } from '../src/index'
 
 describe('can - synchronous rules', () => {
@@ -10,7 +10,10 @@ describe('can - synchronous rules', () => {
       .defineRule('post:create', user => user.id === 1)
       .build()
 
-    expect(grantify.can('post:create')).toBe(true)
+    const result = grantify.can('post:create')
+    expect(result).toBe(true)
+
+    assertType<boolean>(result)
   })
 
   it('should return false when rule fails without context', () => {
@@ -21,7 +24,10 @@ describe('can - synchronous rules', () => {
       .defineRule('post:create', user => user.id === 2)
       .build()
 
-    expect(grantify.can('post:create')).toBe(false)
+    const result = grantify.can('post:create')
+    expect(result).toBe(false)
+
+    assertType<boolean>(result)
   })
 
   it('should use default user when no user provided', () => {
@@ -32,7 +38,10 @@ describe('can - synchronous rules', () => {
       .defineRule('read', user => user.name === 'John')
       .build()
 
-    expect(grantify.can('read')).toBe(true)
+    const result = grantify.can('read')
+    expect(result).toBe(true)
+
+    assertType<boolean>(result)
   })
 
   it('should use provided user instead of default user', () => {
@@ -43,7 +52,10 @@ describe('can - synchronous rules', () => {
       .defineRule('read', user => user.name === 'Jane')
       .build()
 
-    expect(grantify.can('read', { id: 2, name: 'Jane' })).toBe(true)
+    const result = grantify.can('read', { id: 2, name: 'Jane' })
+    expect(result).toBe(true)
+
+    assertType<boolean>(result)
   })
 
   it('should pass context to rule callback', () => {
@@ -57,8 +69,14 @@ describe('can - synchronous rules', () => {
       )
       .build()
 
-    expect(grantify.can('post:edit', { id: 1, isAdmin: false }, { isOwner: true })).toBe(true)
-    expect(grantify.can('post:edit', { id: 1, isAdmin: false }, { isOwner: false })).toBe(false)
+    const result1 = grantify.can('post:edit', { id: 1, isAdmin: false }, { isOwner: true })
+    const result2 = grantify.can('post:edit', { id: 1, isAdmin: false }, { isOwner: false })
+
+    expect(result1).toBe(true)
+    expect(result2).toBe(false)
+
+    assertType<boolean>(result1)
+    assertType<boolean>(result2)
   })
 
   it('should handle undefined context', () => {
@@ -72,7 +90,10 @@ describe('can - synchronous rules', () => {
       )
       .build()
 
-    expect(grantify.can('post:edit')).toBe(false)
+    const result = grantify.can('post:edit')
+    expect(result).toBe(false)
+
+    assertType<boolean>(result)
   })
 
   it('should handle admin user with context', () => {
@@ -86,7 +107,10 @@ describe('can - synchronous rules', () => {
       )
       .build()
 
-    expect(grantify.can('post:edit', { id: 1, isAdmin: true }, { isOwner: false })).toBe(true)
+    const result = grantify.can('post:edit', { id: 1, isAdmin: true }, { isOwner: false })
+    expect(result).toBe(true)
+
+    assertType<boolean>(result)
   })
 
   it('should normalize permission names when checking', () => {
@@ -97,7 +121,10 @@ describe('can - synchronous rules', () => {
       .defineRule('read', () => true)
       .build()
 
-    expect(grantify.can(' read ' as any)).toBe(true)
+    const result = grantify.can(' read ' as any)
+    expect(result).toBe(true)
+
+    assertType<boolean>(result)
   })
 
   it('should throw error for undefined permission', () => {
@@ -148,9 +175,17 @@ describe('can - synchronous rules', () => {
       )
       .build()
 
-    expect(grantify.can('action', { id: 1, role: 'user' }, { flag1: true, flag2: true, value: 15 })).toBe(true)
-    expect(grantify.can('action', { id: 1, role: 'user' }, { flag1: true, flag2: false, value: 15 })).toBe(false)
-    expect(grantify.can('action', { id: 1, role: 'user' }, { flag1: true, flag2: true, value: 5 })).toBe(false)
+    const result1 = grantify.can('action', { id: 1, role: 'user' }, { flag1: true, flag2: true, value: 15 })
+    const result2 = grantify.can('action', { id: 1, role: 'user' }, { flag1: true, flag2: false, value: 15 })
+    const result3 = grantify.can('action', { id: 1, role: 'user' }, { flag1: true, flag2: true, value: 5 })
+
+    expect(result1).toBe(true)
+    expect(result2).toBe(false)
+    expect(result3).toBe(false)
+
+    assertType<boolean>(result1)
+    assertType<boolean>(result2)
+    assertType<boolean>(result3)
   })
 
   it('should handle null context', () => {
@@ -164,7 +199,10 @@ describe('can - synchronous rules', () => {
       )
       .build()
 
-    expect(grantify.can('test', { id: 1 }, null as any)).toBe(false)
+    const result = grantify.can('test', { id: 1 }, null as any)
+    expect(result).toBe(false)
+
+    assertType<boolean>(result)
   })
 
   it('should evaluate rules independently for each call', () => {
@@ -199,6 +237,8 @@ describe('can - asynchronous rules', () => {
     const result = grantify.can('post:delete')
     expect(result).toBeInstanceOf(Promise)
     expect(await result).toBe(true)
+
+    assertType<Promise<boolean>>(result)
   })
 
   it('should resolve to true when async rule passes', async () => {
@@ -209,7 +249,10 @@ describe('can - asynchronous rules', () => {
       .defineRule('post:delete', async user => await Promise.resolve(user.id === 1))
       .build()
 
-    await expect(grantify.can('post:delete')).resolves.toBe(true)
+    const result = grantify.can('post:delete')
+    await expect(result).resolves.toBe(true)
+
+    assertType<Promise<boolean>>(result)
   })
 
   it('should resolve to false when async rule fails', async () => {
@@ -220,7 +263,10 @@ describe('can - asynchronous rules', () => {
       .defineRule('post:delete', async user => await Promise.resolve(user.id === 2))
       .build()
 
-    await expect(grantify.can('post:delete')).resolves.toBe(false)
+    const result = grantify.can('post:delete')
+    await expect(result).resolves.toBe(false)
+
+    assertType<Promise<boolean>>(result)
   })
 
   it('should pass user to async rule', async () => {
@@ -231,7 +277,10 @@ describe('can - asynchronous rules', () => {
       .defineRule('post:delete', async user => await Promise.resolve(user.name === 'Jane'))
       .build()
 
-    await expect(grantify.can('post:delete', { id: 2, name: 'Jane' })).resolves.toBe(true)
+    const result = grantify.can('post:delete', { id: 2, name: 'Jane' })
+    await expect(result).resolves.toBe(true)
+
+    assertType<Promise<boolean>>(result)
   })
 
   it('should pass context to async rule', async () => {
@@ -245,8 +294,14 @@ describe('can - asynchronous rules', () => {
       )
       .build()
 
-    await expect(grantify.can('post:delete', { id: 1, isAdmin: false }, { force: true })).resolves.toBe(true)
-    await expect(grantify.can('post:delete', { id: 1, isAdmin: false }, { force: false })).resolves.toBe(false)
+    const result1 = grantify.can('post:delete', { id: 1, isAdmin: false }, { force: true })
+    const result2 = grantify.can('post:delete', { id: 1, isAdmin: false }, { force: false })
+
+    await expect(result1).resolves.toBe(true)
+    await expect(result2).resolves.toBe(false)
+
+    assertType<Promise<boolean>>(result1)
+    assertType<Promise<boolean>>(result2)
   })
 
   it('should handle async rule rejection', async () => {
@@ -257,7 +312,10 @@ describe('can - asynchronous rules', () => {
       .defineRule('post:delete', async () => await Promise.reject(new Error('DB error')))
       .build()
 
-    await expect(grantify.can('post:delete')).rejects.toThrow('DB error')
+    const result = grantify.can('post:delete')
+    await expect(result).rejects.toThrow('DB error')
+
+    assertType<Promise<boolean>>(result)
   })
 
   it('should handle delayed async resolution', async () => {
@@ -271,7 +329,10 @@ describe('can - asynchronous rules', () => {
       })
       .build()
 
-    await expect(grantify.can('post:delete')).resolves.toBe(true)
+    const result = grantify.can('post:delete')
+    await expect(result).resolves.toBe(true)
+
+    assertType<Promise<boolean>>(result)
   })
 
   it('should use default user in async rules', async () => {
@@ -282,7 +343,10 @@ describe('can - asynchronous rules', () => {
       .defineRule('action', async user => await Promise.resolve(user.id === 42 && user.role === 'admin'))
       .build()
 
-    await expect(grantify.can('action')).resolves.toBe(true)
+    const result = grantify.can('action')
+    await expect(result).resolves.toBe(true)
+
+    assertType<Promise<boolean>>(result)
   })
 
   it('should handle async rules with complex context', async () => {
@@ -306,13 +370,14 @@ describe('can - asynchronous rules', () => {
       )
       .build()
 
-    await expect(
-      grantify.can('resource:access', { id: 1 }, { resource: { id: 100, ownerId: 1 }, action: 'write' }),
-    ).resolves.toBe(true)
+    const result1 = grantify.can('resource:access', { id: 1 }, { resource: { id: 100, ownerId: 1 }, action: 'write' })
+    const result2 = grantify.can('resource:access', { id: 1 }, { resource: { id: 100, ownerId: 2 }, action: 'write' })
 
-    await expect(
-      grantify.can('resource:access', { id: 1 }, { resource: { id: 100, ownerId: 2 }, action: 'write' }),
-    ).resolves.toBe(false)
+    await expect(result1).resolves.toBe(true)
+    await expect(result2).resolves.toBe(false)
+
+    assertType<Promise<boolean>>(result1)
+    assertType<Promise<boolean>>(result2)
   })
 
   it('should handle async rules that return false', async () => {
@@ -326,7 +391,10 @@ describe('can - asynchronous rules', () => {
       })
       .build()
 
-    await expect(grantify.can('test')).resolves.toBe(false)
+    const result = grantify.can('test')
+    await expect(result).resolves.toBe(false)
+
+    assertType<Promise<boolean>>(result)
   })
 
   it('should handle async rules with undefined context', async () => {
@@ -340,7 +408,10 @@ describe('can - asynchronous rules', () => {
       )
       .build()
 
-    await expect(grantify.can('test')).resolves.toBe(false)
+    const result = grantify.can('test')
+    await expect(result).resolves.toBe(false)
+
+    assertType<Promise<boolean>>(result)
   })
 })
 
@@ -354,8 +425,14 @@ describe('can - mixed sync and async', () => {
       .defineRule('async', async () => await Promise.resolve(true))
       .build()
 
-    expect(grantify.can('sync')).toBe(true)
-    await expect(grantify.can('async')).resolves.toBe(true)
+    const syncResult = grantify.can('sync')
+    const asyncResult = grantify.can('async')
+
+    expect(syncResult).toBe(true)
+    await expect(asyncResult).resolves.toBe(true)
+
+    assertType<boolean>(syncResult)
+    assertType<Promise<boolean>>(asyncResult)
   })
 
   it('should not affect sync rules when async rules are defined', () => {
@@ -368,8 +445,14 @@ describe('can - mixed sync and async', () => {
       .defineRule('c', () => false)
       .build()
 
-    expect(grantify.can('a')).toBe(true)
-    expect(grantify.can('c')).toBe(false)
+    const resultA = grantify.can('a')
+    const resultC = grantify.can('c')
+
+    expect(resultA).toBe(true)
+    expect(resultC).toBe(false)
+
+    assertType<boolean>(resultA)
+    assertType<boolean>(resultC)
   })
 
   it('should handle multiple async rules independently', async () => {
@@ -382,8 +465,16 @@ describe('can - mixed sync and async', () => {
       .defineRule('c', async () => await Promise.reject(new Error('error')))
       .build()
 
-    await expect(grantify.can('a')).resolves.toBe(true)
-    await expect(grantify.can('b')).resolves.toBe(false)
-    await expect(grantify.can('c')).rejects.toThrow('error')
+    const resultA = grantify.can('a')
+    const resultB = grantify.can('b')
+    const resultC = grantify.can('c')
+
+    await expect(resultA).resolves.toBe(true)
+    await expect(resultB).resolves.toBe(false)
+    await expect(resultC).rejects.toThrow('error')
+
+    assertType<Promise<boolean>>(resultA)
+    assertType<Promise<boolean>>(resultB)
+    assertType<Promise<boolean>>(resultC)
   })
 })

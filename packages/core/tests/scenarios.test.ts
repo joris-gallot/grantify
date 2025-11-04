@@ -1,7 +1,79 @@
-import { describe, expect, it } from 'vitest'
+import { assertType, describe, expect, it } from 'vitest'
 import { createGrantify } from '../src/index'
 
-describe('complex scenarios', () => {
+describe('scenarios - basic', () => {
+  it('should create a grantify builder', () => {
+    const { defineRule } = createGrantify({
+      permissions: ['read', 'write'] as const,
+      user: { id: 1 },
+    })
+
+    expect(defineRule).toBeDefined()
+    expect(typeof defineRule).toBe('function')
+  })
+
+  it('should build a grantify instance', () => {
+    const grantify = createGrantify({
+      permissions: ['read'] as const,
+      user: { id: 1 },
+    })
+      .defineRule('read', () => true)
+      .build()
+
+    expect(grantify).toBeDefined()
+    expect(grantify.can).toBeDefined()
+    expect(grantify.getRules).toBeDefined()
+  })
+
+  it('should handle empty permissions array', () => {
+    const grantify = createGrantify({
+      permissions: [] as const,
+      user: { id: 1 },
+    }).build()
+
+    expect(grantify.getRules()).toEqual([])
+  })
+
+  it('should handle complex user objects', () => {
+    interface User {
+      id: number
+      roles: string[]
+      permissions: string[]
+      metadata: { level: number }
+    }
+
+    const user: User = {
+      id: 1,
+      roles: ['admin'],
+      permissions: ['read', 'write'],
+      metadata: { level: 5 },
+    }
+
+    const { defineRule } = createGrantify({
+      permissions: ['admin:access'] as const,
+      user,
+    })
+
+    expect(defineRule).toBeDefined()
+  })
+
+  it('should preserve user data through builder chain', () => {
+    const user = { id: 42, name: 'Alice' }
+    const grantify = createGrantify({
+      permissions: ['test'] as const,
+      user,
+    })
+      .defineRule('test', u => u.id === 42 && u.name === 'Alice')
+      .build()
+
+    const result = grantify.can('test')
+    expect(result).toBe(true)
+
+    assertType<boolean>(result)
+  })
+})
+
+describe('scenarios - complex', () => {
   it('should handle multiple permissions with different return types', async () => {
     const grantify = createGrantify({
       permissions: ['read', 'write', 'delete'] as const,
@@ -12,12 +84,27 @@ describe('complex scenarios', () => {
       .defineRule('delete', async user => await Promise.resolve(user.isAdmin))
       .build()
 
-    expect(grantify.can('read')).toBe(true)
-    expect(grantify.can('write', { id: 1, isAdmin: false }, { isOwner: true })).toBe(true)
-    await expect(grantify.can('delete')).resolves.toBe(false)
+    const readResult = grantify.can('read')
+    const writeResult = grantify.can('write', { id: 1, isAdmin: false }, { isOwner: true })
+    const deleteResult = grantify.can('delete')
+
+    expect(readResult).toBe(true)
+    expect(writeResult).toBe(true)
+    await expect(deleteResult).resolves.toBe(false)
+
+    assertType<boolean>(readResult)
+    assertType<boolean>(writeResult)
+    assertType<Promise<boolean>>(deleteResult)
   })
 
-  it('should handle complex user objects', () => {
+  it('should handle complex user objects with rules', () => {
+    interface User {
+      id: number
+      roles: string[]
+      permissions: string[]
+      metadata: { level: number }
+    }
+
     const grantify = createGrantify({
       permissions: ['admin:access'] as const,
       user: {
@@ -31,7 +118,10 @@ describe('complex scenarios', () => {
         user.roles.includes('admin') && user.metadata.level >= 5)
       .build()
 
-    expect(grantify.can('admin:access')).toBe(true)
+    const result = grantify.can('admin:access')
+    expect(result).toBe(true)
+
+    assertType<boolean>(result)
   })
 
   it('should handle complex context objects', () => {
@@ -50,17 +140,23 @@ describe('complex scenarios', () => {
       )
       .build()
 
-    expect(grantify.can('resource:access', { id: 1, teamId: 10 }, {
+    const result1 = grantify.can('resource:access', { id: 1, teamId: 10 }, {
       resource: { ownerId: 2, teamId: 10, isPublic: false },
-    })).toBe(true)
-
-    expect(grantify.can('resource:access', { id: 1, teamId: 10 }, {
+    })
+    const result2 = grantify.can('resource:access', { id: 1, teamId: 10 }, {
       resource: { ownerId: 2, teamId: 20, isPublic: false },
-    })).toBe(false)
-
-    expect(grantify.can('resource:access', { id: 1, teamId: 10 }, {
+    })
+    const result3 = grantify.can('resource:access', { id: 1, teamId: 10 }, {
       resource: { ownerId: 2, teamId: 20, isPublic: true },
-    })).toBe(true)
+    })
+
+    expect(result1).toBe(true)
+    expect(result2).toBe(false)
+    expect(result3).toBe(true)
+
+    assertType<boolean>(result1)
+    assertType<boolean>(result2)
+    assertType<boolean>(result3)
   })
 
   it('should support chaining with mixed sync and async rules', async () => {
@@ -74,10 +170,20 @@ describe('complex scenarios', () => {
       .defineRule('d', async () => await Promise.resolve(false))
       .build()
 
-    expect(grantify.can('a')).toBe(true)
-    await expect(grantify.can('b')).resolves.toBe(true)
-    expect(grantify.can('c')).toBe(false)
-    await expect(grantify.can('d')).resolves.toBe(false)
+    const resultA = grantify.can('a')
+    const resultB = grantify.can('b')
+    const resultC = grantify.can('c')
+    const resultD = grantify.can('d')
+
+    expect(resultA).toBe(true)
+    await expect(resultB).resolves.toBe(true)
+    expect(resultC).toBe(false)
+    await expect(resultD).resolves.toBe(false)
+
+    assertType<boolean>(resultA)
+    assertType<Promise<boolean>>(resultB)
+    assertType<boolean>(resultC)
+    assertType<Promise<boolean>>(resultD)
   })
 
   it('should handle deeply nested context objects', () => {
@@ -106,7 +212,7 @@ describe('complex scenarios', () => {
       )
       .build()
 
-    expect(grantify.can('deep:access', { id: 1 }, {
+    const result1 = grantify.can('deep:access', { id: 1 }, {
       level1: {
         level2: {
           level3: {
@@ -115,9 +221,8 @@ describe('complex scenarios', () => {
           },
         },
       },
-    })).toBe(true)
-
-    expect(grantify.can('deep:access', { id: 1 }, {
+    })
+    const result2 = grantify.can('deep:access', { id: 1 }, {
       level1: {
         level2: {
           level3: {
@@ -126,34 +231,50 @@ describe('complex scenarios', () => {
           },
         },
       },
-    })).toBe(false)
+    })
+
+    expect(result1).toBe(true)
+    expect(result2).toBe(false)
+
+    assertType<boolean>(result1)
+    assertType<boolean>(result2)
   })
 
   it('should handle role-based access with hierarchy', () => {
+    interface User {
+      id: number
+      role: 'admin' | 'moderator' | 'user'
+    }
+
     const roleHierarchy = {
       admin: 3,
       moderator: 2,
       user: 1,
     }
 
-    interface User {
-      id: number
-      role: keyof typeof roleHierarchy
-    }
-
     const grantify = createGrantify({
       permissions: ['content:delete', 'content:edit', 'content:view'] as const,
-      user: { id: 1, role: 'moderator' } as User,
+      user: { id: 1, role: 'moderator' as const },
     })
       .defineRule('content:delete', user => roleHierarchy[user.role] >= 3)
       .defineRule('content:edit', user => roleHierarchy[user.role] >= 2)
       .defineRule('content:view', user => roleHierarchy[user.role] >= 1)
       .build()
 
-    expect(grantify.can('content:delete', { id: 1, role: 'admin' })).toBe(true)
-    expect(grantify.can('content:delete', { id: 1, role: 'moderator' })).toBe(false)
-    expect(grantify.can('content:edit', { id: 1, role: 'moderator' })).toBe(true)
-    expect(grantify.can('content:view', { id: 1, role: 'user' })).toBe(true)
+    const deleteResult = grantify.can('content:delete', { id: 1, role: 'admin' })
+    const deleteResult2 = grantify.can('content:delete', { id: 1, role: 'moderator' })
+    const editResult = grantify.can('content:edit', { id: 1, role: 'moderator' })
+    const viewResult = grantify.can('content:view', { id: 1, role: 'user' })
+
+    expect(deleteResult).toBe(true)
+    expect(deleteResult2).toBe(false)
+    expect(editResult).toBe(true)
+    expect(viewResult).toBe(true)
+
+    assertType<boolean>(deleteResult)
+    assertType<boolean>(deleteResult2)
+    assertType<boolean>(editResult)
+    assertType<boolean>(viewResult)
   })
 
   it('should handle time-based permissions', () => {
@@ -177,15 +298,20 @@ describe('complex scenarios', () => {
       .build()
 
     const now = Date.now()
-    expect(grantify.can('time:sensitive', { id: 1 }, {
+    const result1 = grantify.can('time:sensitive', { id: 1 }, {
       timestamp: now,
       expiresAt: now + 1000,
-    })).toBe(true)
-
-    expect(grantify.can('time:sensitive', { id: 1 }, {
+    })
+    const result2 = grantify.can('time:sensitive', { id: 1 }, {
       timestamp: now,
       expiresAt: now - 1000,
-    })).toBe(false)
+    })
+
+    expect(result1).toBe(true)
+    expect(result2).toBe(false)
+
+    assertType<boolean>(result1)
+    assertType<boolean>(result2)
   })
 
   it('should handle async API calls in rules', async () => {
@@ -201,8 +327,14 @@ describe('complex scenarios', () => {
       .defineRule('api:check', async user => await mockApiCall(user.id))
       .build()
 
-    await expect(grantify.can('api:check')).resolves.toBe(true)
-    await expect(grantify.can('api:check', { id: 1 })).resolves.toBe(false)
+    const result1 = grantify.can('api:check')
+    const result2 = grantify.can('api:check', { id: 1 })
+
+    await expect(result1).resolves.toBe(true)
+    await expect(result2).resolves.toBe(false)
+
+    assertType<Promise<boolean>>(result1)
+    assertType<Promise<boolean>>(result2)
   })
 
   it('should handle multiple context types for different permissions', () => {
@@ -224,12 +356,25 @@ describe('complex scenarios', () => {
       )
       .build()
 
-    expect(grantify.can('post:edit', { id: 1, isAdmin: false, teamId: 10 }, { postOwnerId: 1 })).toBe(true)
-    expect(grantify.can('user:ban', { id: 1, isAdmin: true, teamId: 10 }, { targetUserId: 2, targetRole: 'user' })).toBe(true)
-    expect(grantify.can('resource:access', { id: 1, isAdmin: false, teamId: 10 }, { resourceTeamId: 10 })).toBe(true)
+    const editResult = grantify.can('post:edit', { id: 1, isAdmin: false, teamId: 10 }, { postOwnerId: 1 })
+    const banResult = grantify.can('user:ban', { id: 1, isAdmin: true, teamId: 10 }, { targetUserId: 2, targetRole: 'user' })
+    const accessResult = grantify.can('resource:access', { id: 1, isAdmin: false, teamId: 10 }, { resourceTeamId: 10 })
+
+    expect(editResult).toBe(true)
+    expect(banResult).toBe(true)
+    expect(accessResult).toBe(true)
+
+    assertType<boolean>(editResult)
+    assertType<boolean>(banResult)
+    assertType<boolean>(accessResult)
   })
 
   it('should handle array-based permissions in user object', () => {
+    interface User {
+      id: number
+      permissions: string[]
+    }
+
     const grantify = createGrantify({
       permissions: ['feature:alpha', 'feature:beta'] as const,
       user: { id: 1, permissions: ['alpha', 'gamma'] },
@@ -238,8 +383,14 @@ describe('complex scenarios', () => {
       .defineRule('feature:beta', user => user.permissions.includes('beta'))
       .build()
 
-    expect(grantify.can('feature:alpha')).toBe(true)
-    expect(grantify.can('feature:beta')).toBe(false)
+    const alphaResult = grantify.can('feature:alpha')
+    const betaResult = grantify.can('feature:beta')
+
+    expect(alphaResult).toBe(true)
+    expect(betaResult).toBe(false)
+
+    assertType<boolean>(alphaResult)
+    assertType<boolean>(betaResult)
   })
 
   it('should handle conditional logic with multiple factors', () => {
@@ -257,7 +408,7 @@ describe('complex scenarios', () => {
 
     const grantify = createGrantify({
       permissions: ['feature:access'] as const,
-      user: { id: 1, role: 'user', verified: true, subscriptionTier: 'pro' } as User,
+      user: { id: 1, role: 'user', verified: true, subscriptionTier: 'pro' as const },
     })
       .defineRule<'feature:access', Context>(
         'feature:access',
@@ -273,11 +424,17 @@ describe('complex scenarios', () => {
       )
       .build()
 
-    expect(grantify.can('feature:access', { id: 1, role: 'user', verified: true, subscriptionTier: 'pro' }, { isPremiumFeature: true, requiresVerification: true })).toBe(true)
+    const result1 = grantify.can('feature:access', { id: 1, role: 'user', verified: true, subscriptionTier: 'pro' }, { isPremiumFeature: true, requiresVerification: true })
+    const result2 = grantify.can('feature:access', { id: 1, role: 'user', verified: false, subscriptionTier: 'pro' }, { isPremiumFeature: true, requiresVerification: true })
+    const result3 = grantify.can('feature:access', { id: 1, role: 'user', verified: true, subscriptionTier: 'free' }, { isPremiumFeature: true, requiresVerification: false })
 
-    expect(grantify.can('feature:access', { id: 1, role: 'user', verified: false, subscriptionTier: 'pro' }, { isPremiumFeature: true, requiresVerification: true })).toBe(false)
+    expect(result1).toBe(true)
+    expect(result2).toBe(false)
+    expect(result3).toBe(false)
 
-    expect(grantify.can('feature:access', { id: 1, role: 'user', verified: true, subscriptionTier: 'free' }, { isPremiumFeature: true, requiresVerification: false })).toBe(false)
+    assertType<boolean>(result1)
+    assertType<boolean>(result2)
+    assertType<boolean>(result3)
   })
 
   it('should handle async rules with complex async operations', async () => {
@@ -309,9 +466,17 @@ describe('complex scenarios', () => {
       )
       .build()
 
-    await expect(grantify.can('complex:async', { id: 1 }, { resourceId: 1, cacheKey: 'valid' })).resolves.toBe(true)
-    await expect(grantify.can('complex:async', { id: 1 }, { resourceId: 2, cacheKey: 'valid' })).resolves.toBe(false)
-    await expect(grantify.can('complex:async', { id: 1 }, { resourceId: 1, cacheKey: 'invalid' })).resolves.toBe(false)
+    const result1 = grantify.can('complex:async', { id: 1 }, { resourceId: 1, cacheKey: 'valid' })
+    const result2 = grantify.can('complex:async', { id: 1 }, { resourceId: 2, cacheKey: 'valid' })
+    const result3 = grantify.can('complex:async', { id: 1 }, { resourceId: 1, cacheKey: 'invalid' })
+
+    await expect(result1).resolves.toBe(true)
+    await expect(result2).resolves.toBe(false)
+    await expect(result3).resolves.toBe(false)
+
+    assertType<Promise<boolean>>(result1)
+    assertType<Promise<boolean>>(result2)
+    assertType<Promise<boolean>>(result3)
   })
 
   it('should handle edge case with all permissions defined but none executed', () => {
@@ -348,9 +513,19 @@ describe('complex scenarios', () => {
       )
       .build()
 
-    expect(grantify.can('optional:check', { id: 1 }, { data: { nested: { value: 'valid' } } })).toBe(true)
-    expect(grantify.can('optional:check', { id: 1 }, { data: { nested: {} } })).toBe(false)
-    expect(grantify.can('optional:check', { id: 1 }, { data: {} })).toBe(false)
-    expect(grantify.can('optional:check', { id: 1 }, {})).toBe(false)
+    const result1 = grantify.can('optional:check', { id: 1 }, { data: { nested: { value: 'valid' } } })
+    const result2 = grantify.can('optional:check', { id: 1 }, { data: { nested: {} } })
+    const result3 = grantify.can('optional:check', { id: 1 }, { data: {} })
+    const result4 = grantify.can('optional:check', { id: 1 }, {})
+
+    expect(result1).toBe(true)
+    expect(result2).toBe(false)
+    expect(result3).toBe(false)
+    expect(result4).toBe(false)
+
+    assertType<boolean>(result1)
+    assertType<boolean>(result2)
+    assertType<boolean>(result3)
+    assertType<boolean>(result4)
   })
 })

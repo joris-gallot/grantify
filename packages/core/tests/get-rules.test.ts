@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { assertType, describe, expect, it } from 'vitest'
 import { createGrantify } from '../src/index'
 
 describe('getRules', () => {
@@ -26,6 +26,15 @@ describe('getRules', () => {
     expect(rules[0]!.perm).toBe('read')
     expect(rules[1]!.perm).toBe('write')
     expect(rules[2]!.perm).toBe('delete')
+
+    assertType<Array<{
+      perm: 'read' | 'write' | 'delete'
+      cb: (user: { id: number }, ctx?: any) => boolean | Promise<boolean>
+    }>>(rules)
+
+    assertType<boolean>(grantify.can('read'))
+    assertType<boolean>(grantify.can('write'))
+    assertType<Promise<boolean>>(grantify.can('delete'))
   })
 
   it('should return a copy of rules array', () => {
@@ -54,6 +63,8 @@ describe('getRules', () => {
 
     const rules = grantify.getRules()
     expect(rules[0]!.cb).toBe(callback)
+
+    assertType<(user: { id: number }, ctx?: any) => boolean>(callback)
   })
 
   it('should return rules in order they were defined', () => {
@@ -127,8 +138,11 @@ describe('getRules', () => {
 
     const rules = grantify.getRules()
     expect(rules).toHaveLength(2)
-    expect(rules[0]!.cb).toBe(syncRule)
-    expect(rules[1]!.cb).toBe(asyncRule)
+    expect(rules[0].cb).toBe(syncRule)
+    expect(rules[1].cb).toBe(asyncRule)
+
+    assertType<boolean>(grantify.can('sync'))
+    assertType<Promise<boolean>>(grantify.can('async'))
   })
 
   it('should handle rules with context in getRules', () => {
@@ -144,8 +158,11 @@ describe('getRules', () => {
 
     const rules = grantify.getRules()
     expect(rules).toHaveLength(1)
-    expect(rules[0]!.perm).toBe('edit')
-    expect(typeof rules[0]!.cb).toBe('function')
+    expect(rules[0].perm).toBe('edit')
+    expect(typeof rules[0].cb).toBe('function')
+
+    const result = grantify.can('edit', { id: 1, isAdmin: false }, { isOwner: true })
+    assertType<boolean>(result)
   })
 
   it('should return correct rule structure', () => {
@@ -162,6 +179,11 @@ describe('getRules', () => {
       perm: 'test',
       cb: callback,
     })
+
+    assertType<{
+      perm: 'test'
+      cb: (user: { id: number }, ctx?: any) => boolean
+    }>(rules[0])
   })
 
   it('should not share references between multiple getRules calls', () => {
@@ -179,5 +201,42 @@ describe('getRules', () => {
 
     expect(rules1).toHaveLength(2)
     expect(rules2).toHaveLength(1)
+  })
+
+  it('should type check getRules return with mixed sync and async', () => {
+    const grantify = createGrantify({
+      permissions: ['a', 'b', 'c'] as const,
+      user: { id: 1, name: 'test' },
+    })
+      .defineRule('a', () => true)
+      .defineRule<'b', { flag: boolean }>('b', (user, ctx) => ctx?.flag ?? false)
+      .defineRule('c', async () => await Promise.resolve(true))
+      .build()
+
+    const rules = grantify.getRules()
+
+    assertType<Array<{
+      perm: 'a' | 'b' | 'c'
+      cb: (user: { id: number, name: string }, ctx?: any) => boolean | Promise<boolean>
+    }>>(rules)
+
+    assertType<boolean>(grantify.can('a'))
+    assertType<boolean>(grantify.can('b', { id: 1, name: 'test' }, { flag: true }))
+    assertType<Promise<boolean>>(grantify.can('c'))
+  })
+
+  it('should handle error cases with type safety', () => {
+    const grantify = createGrantify({
+      permissions: ['read', 'write'] as const,
+      user: { id: 1 },
+    })
+      .defineRule('read', () => true)
+      .build()
+
+    assertType<boolean>(grantify.can('read'))
+
+    expect(() => grantify.can('write')).toThrow('No rule defined for permission "write".')
+
+    expect(() => grantify.can('delete' as any)).toThrow('Permission "delete" is not defined.')
   })
 })
