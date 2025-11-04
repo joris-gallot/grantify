@@ -1,4 +1,4 @@
-import type { GrantifyInstance } from '@grantify/core'
+import type { GrantifyInstance, RuleMap } from '@grantify/core'
 import type { App, InjectionKey } from 'vue'
 import { inject } from 'vue'
 
@@ -14,7 +14,7 @@ export function useGrantify() {
   return grantify
 }
 
-export default <U, P extends string>(grantifyInstance: GrantifyInstance<U, P>) => {
+export default <U, P extends string, RM extends RuleMap<P>>(grantifyInstance: GrantifyInstance<U, P, RM>) => {
   return {
     install(app: App) {
       app.provide(grantifyInstanceKey, grantifyInstance)
