@@ -9,15 +9,11 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
-    "noEmit": true,
     "paths": {
       "@grantify/core": [
-        "../../packages/core/src/index"
-      ],
-      "@grantify/vue": [
-        "../../packages/vue/src/index"
+        "../core/src/index.ts"
       ]
-    }
+    },
   },
   "include": [
     "**/*.ts"

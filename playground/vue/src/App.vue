@@ -1,17 +1,7 @@
 <script setup lang="ts">
-import { createGrantify } from '@grantify/core'
+import { useGrantify } from '@grantify/vue'
 
-const { defineRule } = createGrantify({
-  permissions: ['post:create', 'post:edit', 'post:delete'] as const,
-  user: { id: 1, isAdmin: false },
-})
-
-const grantify = defineRule('post:create', user => user.id === 1)
-  .defineRule('post:edit', (user, ctx: { isOwner: boolean } | undefined) => Boolean(user.isAdmin || ctx?.isOwner))
-  .defineRule('post:delete', async () => await Promise.resolve(true))
-  .build()
-
-const rules = grantify.getRules()
+const grantify = useGrantify()
 
 const canEdit = grantify.can('post:edit', {
   id: 2,

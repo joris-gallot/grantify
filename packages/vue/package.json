@@ -1,0 +1,47 @@
+{
+  "name": "@grantify/vue",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Vue integration for Grantify, a permissions and access control library.",
+  "author": "Joris Gallot",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joris-gallot/grantify.git"
+  },
+  "keywords": [
+    "rbac",
+    "acl",
+    "access-control",
+    "permissions",
+    "roles",
+    "authorization",
+    "auth",
+    "security",
+    "vue"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@grantify/core": "workspace:>=0.0.1",
+    "vue": ">=3.2.25"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "unbuild": "catalog:"
+  }
+}
