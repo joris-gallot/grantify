@@ -7,7 +7,7 @@ const { defineRule } = createGrantify({
 })
 
 const grantify = defineRule('post:create', user => user.id === 1)
-  .defineRule<'post:edit', { isOwner: boolean }>('post:edit', (user, ctx) => Boolean(user.isAdmin || ctx?.isOwner))
+  .defineRule('post:edit', (user, ctx: { isOwner: boolean } | undefined) => Boolean(user.isAdmin || ctx?.isOwner))
   .defineRule('post:delete', async () => await Promise.resolve(true))
   .build()
 
