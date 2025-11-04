@@ -1,3 +1,4 @@
+import type { GrantifyInstance } from '../src/index'
 import { assertType, describe, expect, it } from 'vitest'
 import { createGrantify } from '../src/index'
 
@@ -27,6 +28,29 @@ describe('defineRule', () => {
         (user, ctx: { isOwner: boolean } | undefined) => user.isAdmin || (ctx?.isOwner ?? false),
       )
       .build()
+
+    assertType<GrantifyInstance<{
+      id: number
+      isAdmin: boolean
+    }, 'post:edit', {
+      'post:edit': {
+        context: any
+        async: boolean
+      }
+      // @ts-expect-error -- make sure context and async are properly typed
+    }>>(grantify)
+
+    assertType<GrantifyInstance<{
+      id: number
+      isAdmin: boolean
+    }, 'post:edit', {
+      'post:edit': {
+        async: false
+        context: {
+          isOwner: boolean
+        }
+      }
+    }>>(grantify)
 
     expect(grantify.getRules()).toHaveLength(1)
 
@@ -92,6 +116,87 @@ describe('defineRule', () => {
       .defineRule('b', user => user.id > 0)
       .defineRule('c', (user, ctx: { flag: boolean } | undefined) => user.role === 'admin' && (ctx?.flag ?? false))
       .build()
+
+    assertType<GrantifyInstance<{
+      id: number
+      role: string
+    }, 'a' | 'b' | 'c', {
+      a: {
+        context: any
+        async: boolean
+      }
+      b: {
+        async: false
+        context: unknown
+      }
+      c: {
+        async: false
+        context: {
+          flag: boolean
+        }
+      }
+      // @ts-expect-error -- make sure context and async are properly typed
+    }>>(grantify)
+
+    assertType<GrantifyInstance<{
+      id: number
+      role: string
+    }, 'a' | 'b' | 'c', {
+      a: {
+        async: false
+        context: unknown
+      }
+      b: {
+        context: any
+        async: boolean
+      }
+      c: {
+        async: false
+        context: {
+          flag: boolean
+        }
+      }
+      // @ts-expect-error -- make sure context and async are properly typed
+    }>>(grantify)
+
+    assertType<GrantifyInstance<{
+      id: number
+      role: string
+    }, 'a' | 'b' | 'c', {
+      a: {
+        async: false
+        context: unknown
+      }
+      b: {
+        async: false
+        context: unknown
+      }
+      c: {
+        context: any
+        async: boolean
+      }
+      // @ts-expect-error -- make sure context and async are properly typed
+    }>>(grantify)
+
+    assertType<GrantifyInstance<{
+      id: number
+      role: string
+    }, 'a' | 'b' | 'c', {
+      a: {
+        async: false
+        context: unknown
+      }
+      b: {
+        async: false
+        context: unknown
+      }
+      c: {
+        async: false
+        context: {
+          flag: boolean
+        }
+      }
+    }>>(grantify)
 
     const rules = grantify.getRules()
     expect(rules).toHaveLength(3)
@@ -184,6 +289,27 @@ describe('defineRule', () => {
       )
       .build()
 
+    assertType<GrantifyInstance<{
+      id: number
+      teamId: number
+    }, 'resource:access', {
+      'resource:access': {
+        async: boolean
+        context: any
+      }
+      // @ts-expect-error -- make sure context and async are properly typed
+    }>>(grantify)
+
+    assertType<GrantifyInstance<{
+      id: number
+      teamId: number
+    }, 'resource:access', {
+      'resource:access': {
+        async: false
+        context: ComplexContext
+      }
+    }>>(grantify)
+
     expect(grantify.getRules()).toHaveLength(1)
 
     const result = grantify.can(
@@ -250,6 +376,28 @@ describe('defineRule', () => {
         return ctx.value === 'test' && ctx.flag
       })
       .build()
+
+    assertType<GrantifyInstance<{
+      id: number
+    }, 'action', {
+      action: {
+        async: boolean
+        context: any
+      }
+      // @ts-expect-error -- make sure context and async are properly typed
+    }>>(grantify)
+
+    assertType<GrantifyInstance<{
+      id: number
+    }, 'action', {
+      action: {
+        async: false
+        context: {
+          value: string
+          flag: boolean
+        }
+      }
+    }>>(grantify)
 
     const result = grantify.can('action', { id: 1 }, { value: 'test', flag: true })
     assertType<boolean>(result)
