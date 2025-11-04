@@ -51,7 +51,7 @@ export function createGrantify<U = unknown, P extends readonly string[] = []>(
     const permission = normalize(perm)
     const currentUser = user ?? defaultUser
 
-    if (!allowedPermissions.includes(permission as any)) {
+    if (!allowedPermissions.includes(permission)) {
       throw new Error(`Permission "${permission}" is not defined.`)
     }
 
