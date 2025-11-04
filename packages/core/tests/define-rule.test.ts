@@ -11,7 +11,7 @@ describe('defineRule', () => {
       .build()
 
     expect(grantify.getRules()).toHaveLength(1)
-    expect(grantify.getRules()[0].perm).toBe('post:create')
+    expect(grantify.getRules()[0]!.perm).toBe('post:create')
 
     const result = grantify.can('post:create')
     assertType<boolean>(result)
@@ -22,17 +22,13 @@ describe('defineRule', () => {
       permissions: ['post:edit'] as const,
       user: { id: 1, isAdmin: false },
     })
-      .defineRule<'post:edit', { isOwner: boolean }>(
+      .defineRule(
         'post:edit',
-        (user, ctx) => user.isAdmin || (ctx?.isOwner ?? false),
+        (user, ctx: { isOwner: boolean } | undefined) => user.isAdmin || (ctx?.isOwner ?? false),
       )
       .build()
 
     expect(grantify.getRules()).toHaveLength(1)
-
-    const result = grantify.can('post:delete')
-    assertType<Promise<boolean>>(result)
-    expect(grantify.getRules()[0].perm).toBe('post:edit')
 
     const result = grantify.can('post:edit', { id: 1, isAdmin: false }, { isOwner: true })
     assertType<boolean>(result)
@@ -94,14 +90,14 @@ describe('defineRule', () => {
     })
       .defineRule('a', () => true)
       .defineRule('b', user => user.id > 0)
-      .defineRule<'c', { flag: boolean }>('c', (user, ctx) => user.role === 'admin' && (ctx?.flag ?? false))
+      .defineRule('c', (user, ctx: { flag: boolean } | undefined) => user.role === 'admin' && (ctx?.flag ?? false))
       .build()
 
     const rules = grantify.getRules()
     expect(rules).toHaveLength(3)
-    expect(rules[0].cb()).toBe(true)
-    expect(rules[1].cb({ id: 1, role: 'admin' })).toBe(true)
-    expect(rules[2].cb({ id: 1, role: 'admin' }, { flag: true })).toBe(true)
+    expect(rules[0]!.cb({ id: 1, role: 'admin' })).toBe(true)
+    expect(rules[1]!.cb({ id: 1, role: 'admin' })).toBe(true)
+    expect(rules[2]!.cb({ id: 1, role: 'admin' }, { flag: true })).toBe(true)
 
     assertType<boolean>(grantify.can('a'))
     assertType<boolean>(grantify.can('b'))
@@ -170,17 +166,17 @@ describe('defineRule', () => {
         teamId: number
         isPublic: boolean
       }
-      action: 'read' | 'write'
-      timestamp: number
+      action?: 'read' | 'write'
+      timestamp?: number
     }
 
     const grantify = createGrantify({
       permissions: ['resource:access'] as const,
       user: { id: 1, teamId: 10 },
     })
-      .defineRule<'resource:access', ComplexContext>(
+      .defineRule(
         'resource:access',
-        (user, ctx) => {
+        (user, ctx: ComplexContext | undefined) => {
           if (!ctx)
             return false
           return ctx.resource.isPublic || ctx.resource.ownerId === user.id || ctx.resource.teamId === user.teamId
@@ -190,9 +186,17 @@ describe('defineRule', () => {
 
     expect(grantify.getRules()).toHaveLength(1)
 
-    const result = grantify.can('resource:access', { id: 1, teamId: 10 }, {
-      resource: { ownerId: 1, teamId: 10, isPublic: false },
-    })
+    const result = grantify.can(
+      'resource:access',
+      { id: 1, teamId: 10 },
+      {
+        resource: {
+          ownerId: 1,
+          teamId: 10,
+          isPublic: false,
+        },
+      },
+    )
     assertType<boolean>(result)
   })
 
@@ -240,7 +244,7 @@ describe('defineRule', () => {
       permissions: ['action'] as const,
       user: { id: 1 },
     })
-      .defineRule<'action', { value: string, flag: boolean }>('action', (user, ctx) => {
+      .defineRule('action', (user, ctx: { value: string, flag: boolean } | undefined) => {
         if (!ctx)
           return false
         return ctx.value === 'test' && ctx.flag

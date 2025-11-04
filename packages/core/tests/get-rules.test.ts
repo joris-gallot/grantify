@@ -138,8 +138,8 @@ describe('getRules', () => {
 
     const rules = grantify.getRules()
     expect(rules).toHaveLength(2)
-    expect(rules[0].cb).toBe(syncRule)
-    expect(rules[1].cb).toBe(asyncRule)
+    expect(rules[0]!.cb).toBe(syncRule)
+    expect(rules[1]!.cb).toBe(asyncRule)
 
     assertType<boolean>(grantify.can('sync'))
     assertType<Promise<boolean>>(grantify.can('async'))
@@ -150,16 +150,16 @@ describe('getRules', () => {
       permissions: ['edit'] as const,
       user: { id: 1, isAdmin: false },
     })
-      .defineRule<'edit', { isOwner: boolean }>(
+      .defineRule(
         'edit',
-        (user, ctx) => user.isAdmin || (ctx?.isOwner ?? false),
+        (user, ctx: { isOwner: boolean } | undefined) => user.isAdmin || (ctx?.isOwner ?? false),
       )
       .build()
 
     const rules = grantify.getRules()
     expect(rules).toHaveLength(1)
-    expect(rules[0].perm).toBe('edit')
-    expect(typeof rules[0].cb).toBe('function')
+    expect(rules[0]!.perm).toBe('edit')
+    expect(typeof rules[0]!.cb).toBe('function')
 
     const result = grantify.can('edit', { id: 1, isAdmin: false }, { isOwner: true })
     assertType<boolean>(result)
@@ -178,12 +178,14 @@ describe('getRules', () => {
     expect(rules[0]).toEqual({
       perm: 'test',
       cb: callback,
+      async: false,
     })
 
     assertType<{
       perm: 'test'
-      cb: (user: { id: number }, ctx?: any) => boolean
-    }>(rules[0])
+      cb: (user: { id: number }, ctx?: any) => boolean | Promise<boolean>
+      async: boolean
+    }>(rules[0]!)
   })
 
   it('should not share references between multiple getRules calls', () => {
@@ -197,7 +199,7 @@ describe('getRules', () => {
     const rules1 = grantify.getRules()
     const rules2 = grantify.getRules()
 
-    rules1.push({ perm: 'fake' as any, cb: () => false })
+    rules1.push({ perm: 'fake' as any, cb: () => false, async: false })
 
     expect(rules1).toHaveLength(2)
     expect(rules2).toHaveLength(1)
@@ -209,7 +211,7 @@ describe('getRules', () => {
       user: { id: 1, name: 'test' },
     })
       .defineRule('a', () => true)
-      .defineRule<'b', { flag: boolean }>('b', (user, ctx) => ctx?.flag ?? false)
+      .defineRule('b', (user, ctx: { flag: boolean } | undefined) => ctx?.flag ?? false)
       .defineRule('c', async () => await Promise.resolve(true))
       .build()
 

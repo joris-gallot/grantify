@@ -80,7 +80,7 @@ describe('scenarios - complex', () => {
       user: { id: 1, isAdmin: false },
     })
       .defineRule('read', () => true)
-      .defineRule<'write', { isOwner: boolean }>('write', (user, ctx) => user.isAdmin || (ctx?.isOwner ?? false))
+      .defineRule('write', (user, ctx: { isOwner: boolean } | undefined) => user.isAdmin || (ctx?.isOwner ?? false))
       .defineRule('delete', async user => await Promise.resolve(user.isAdmin))
       .build()
 
@@ -107,7 +107,7 @@ describe('scenarios - complex', () => {
 
     const grantify = createGrantify({
       permissions: ['admin:access'] as const,
-      user: {
+      user: <User>{
         id: 1,
         roles: ['admin'],
         permissions: ['read', 'write'],
@@ -129,9 +129,9 @@ describe('scenarios - complex', () => {
       permissions: ['resource:access'] as const,
       user: { id: 1, teamId: 10 },
     })
-      .defineRule<'resource:access', { resource: { ownerId: number, teamId: number, isPublic: boolean } }>(
+      .defineRule(
         'resource:access',
-        (user, ctx) => {
+        (user, ctx: { resource: { ownerId: number, teamId: number, isPublic: boolean } } | undefined) => {
           if (!ctx)
             return false
           const { resource } = ctx
@@ -202,9 +202,9 @@ describe('scenarios - complex', () => {
       permissions: ['deep:access'] as const,
       user: { id: 1 },
     })
-      .defineRule<'deep:access', DeepContext>(
+      .defineRule(
         'deep:access',
-        (user, ctx) => {
+        (user, ctx: DeepContext | undefined) => {
           if (!ctx)
             return false
           return ctx.level1.level2.level3.allowed && ctx.level1.level2.level3.value === 'secret'
@@ -254,7 +254,7 @@ describe('scenarios - complex', () => {
 
     const grantify = createGrantify({
       permissions: ['content:delete', 'content:edit', 'content:view'] as const,
-      user: { id: 1, role: 'moderator' as const },
+      user: <User>{ id: 1, role: 'moderator' },
     })
       .defineRule('content:delete', user => roleHierarchy[user.role] >= 3)
       .defineRule('content:edit', user => roleHierarchy[user.role] >= 2)
@@ -287,9 +287,9 @@ describe('scenarios - complex', () => {
       permissions: ['time:sensitive'] as const,
       user: { id: 1 },
     })
-      .defineRule<'time:sensitive', Context>(
+      .defineRule(
         'time:sensitive',
-        (user, ctx) => {
+        (user, ctx: Context | undefined) => {
           if (!ctx)
             return false
           return ctx.timestamp < ctx.expiresAt
@@ -342,17 +342,17 @@ describe('scenarios - complex', () => {
       permissions: ['post:edit', 'user:ban', 'resource:access'] as const,
       user: { id: 1, isAdmin: false, teamId: 10 },
     })
-      .defineRule<'post:edit', { postOwnerId: number }>(
+      .defineRule(
         'post:edit',
-        (user, ctx) => user.isAdmin || ctx?.postOwnerId === user.id,
+        (user, ctx: { postOwnerId: number } | undefined) => user.isAdmin || ctx?.postOwnerId === user.id,
       )
-      .defineRule<'user:ban', { targetUserId: number, targetRole: string }>(
+      .defineRule(
         'user:ban',
-        (user, ctx) => user.isAdmin && ctx?.targetRole !== 'admin',
+        (user, ctx: { targetUserId: number, targetRole: string } | undefined) => user.isAdmin && ctx?.targetRole !== 'admin',
       )
-      .defineRule<'resource:access', { resourceTeamId: number }>(
+      .defineRule(
         'resource:access',
-        (user, ctx) => ctx?.resourceTeamId === user.teamId,
+        (user, ctx: { resourceTeamId: number } | undefined) => ctx?.resourceTeamId === user.teamId,
       )
       .build()
 
@@ -377,7 +377,7 @@ describe('scenarios - complex', () => {
 
     const grantify = createGrantify({
       permissions: ['feature:alpha', 'feature:beta'] as const,
-      user: { id: 1, permissions: ['alpha', 'gamma'] },
+      user: <User>{ id: 1, permissions: ['alpha', 'gamma'] },
     })
       .defineRule('feature:alpha', user => user.permissions.includes('alpha'))
       .defineRule('feature:beta', user => user.permissions.includes('beta'))
@@ -408,11 +408,11 @@ describe('scenarios - complex', () => {
 
     const grantify = createGrantify({
       permissions: ['feature:access'] as const,
-      user: { id: 1, role: 'user', verified: true, subscriptionTier: 'pro' as const },
+      user: <User>{ id: 1, role: 'user', verified: true, subscriptionTier: 'pro' },
     })
-      .defineRule<'feature:access', Context>(
+      .defineRule(
         'feature:access',
-        (user, ctx) => {
+        (user, ctx: Context | undefined) => {
           if (!ctx)
             return false
           if (ctx.requiresVerification && !user.verified)
@@ -452,9 +452,9 @@ describe('scenarios - complex', () => {
       permissions: ['complex:async'] as const,
       user: { id: 1 },
     })
-      .defineRule<'complex:async', { resourceId: number, cacheKey: string }>(
+      .defineRule(
         'complex:async',
-        async (user, ctx) => {
+        async (user, ctx: { resourceId: number, cacheKey: string } | undefined) => {
           if (!ctx)
             return false
           const [dbCheck, cacheCheck] = await Promise.all([
@@ -507,9 +507,9 @@ describe('scenarios - complex', () => {
       permissions: ['optional:check'] as const,
       user: { id: 1 },
     })
-      .defineRule<'optional:check', Context>(
+      .defineRule(
         'optional:check',
-        (user, ctx) => ctx?.data?.nested?.value === 'valid',
+        (user, ctx: Context | undefined) => ctx?.data?.nested?.value === 'valid',
       )
       .build()
 

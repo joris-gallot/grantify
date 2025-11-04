@@ -3,6 +3,7 @@ import type { Prettify } from './types'
 export interface RuleDef<U, P extends string> {
   perm: P
   cb: (user: U, ctx?: any) => boolean | Promise<boolean>
+  async: boolean
 }
 
 export interface GrantifyOptions<U = unknown, P extends readonly string[] = []> {
@@ -21,7 +22,7 @@ export interface GrantifyInstance<U, P extends string, RM extends RuleMap<P> = {
 }
 
 export interface GrantifyBuilder<U = unknown, P extends string = string, RM extends RuleMap<P> = {}> {
-  defineRule: <PP extends P, C, R extends boolean | Promise<boolean> = boolean | Promise<boolean>>(
+  defineRule: <PP extends P, C, R extends boolean | Promise<boolean>>(
     perm: PP,
     cb: (user: U, ctx?: C) => R,
   ) => GrantifyBuilder<
@@ -47,7 +48,7 @@ export function createGrantify<U = unknown, P extends readonly string[] = []>(
     return p.trim()
   }
 
-  async function can(perm: Permission, user?: U, ctx?: any): Promise<boolean> {
+  function can(perm: Permission, user?: U, ctx?: any): boolean | Promise<boolean> {
     const permission = normalize(perm)
     const currentUser = user ?? defaultUser
 
@@ -61,12 +62,13 @@ export function createGrantify<U = unknown, P extends readonly string[] = []>(
       throw new Error(`No rule defined for permission "${permission}".`)
     }
 
+    if (rule.async) {
+      return Promise.resolve(rule.cb(currentUser, ctx))
+    }
+
     const result = rule.cb(currentUser, ctx)
 
-    if (result instanceof Promise) {
-      return await result
-    }
-    else if (typeof result === 'boolean') {
+    if (typeof result === 'boolean') {
       return result
     }
 
@@ -85,7 +87,9 @@ export function createGrantify<U = unknown, P extends readonly string[] = []>(
         throw new Error(`Permission "${permission}" is not defined.`)
       }
 
-      rules.push({ perm: permission, cb })
+      const isAsync = cb.constructor.name === 'AsyncFunction'
+
+      rules.push({ perm: permission, cb, async: isAsync })
       return builder
     },
 

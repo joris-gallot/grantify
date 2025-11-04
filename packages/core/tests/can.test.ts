@@ -63,9 +63,9 @@ describe('can - synchronous rules', () => {
       permissions: ['post:edit'] as const,
       user: { id: 1, isAdmin: false },
     })
-      .defineRule<'post:edit', { isOwner: boolean }>(
+      .defineRule(
         'post:edit',
-        (user, ctx) => user.isAdmin || (ctx?.isOwner ?? false),
+        (user, ctx: { isOwner: boolean } | undefined) => user.isAdmin || (ctx?.isOwner ?? false),
       )
       .build()
 
@@ -84,9 +84,9 @@ describe('can - synchronous rules', () => {
       permissions: ['post:edit'] as const,
       user: { id: 1, isAdmin: false },
     })
-      .defineRule<'post:edit', { isOwner: boolean }>(
+      .defineRule(
         'post:edit',
-        (user, ctx) => user.isAdmin || (ctx?.isOwner ?? false),
+        (user, ctx: { isOwner: boolean } | undefined) => user.isAdmin || (ctx?.isOwner ?? false),
       )
       .build()
 
@@ -101,9 +101,9 @@ describe('can - synchronous rules', () => {
       permissions: ['post:edit'] as const,
       user: { id: 1, isAdmin: true },
     })
-      .defineRule<'post:edit', { isOwner: boolean }>(
+      .defineRule(
         'post:edit',
-        (user, ctx) => user.isAdmin || (ctx?.isOwner ?? false),
+        (user, ctx: { isOwner: boolean } | undefined) => user.isAdmin || (ctx?.isOwner ?? false),
       )
       .build()
 
@@ -124,7 +124,7 @@ describe('can - synchronous rules', () => {
     const result = grantify.can(' read ' as any)
     expect(result).toBe(true)
 
-    assertType<boolean>(result)
+    assertType<boolean | Promise<boolean>>(result)
   })
 
   it('should throw error for undefined permission', () => {
@@ -165,9 +165,9 @@ describe('can - synchronous rules', () => {
       permissions: ['action'] as const,
       user: { id: 1, role: 'user' },
     })
-      .defineRule<'action', { flag1: boolean, flag2: boolean, value: number }>(
+      .defineRule(
         'action',
-        (user, ctx) => {
+        (user, ctx: { flag1: boolean, flag2: boolean, value: number } | undefined) => {
           if (!ctx)
             return false
           return ctx.flag1 && ctx.flag2 && ctx.value > 10
@@ -193,9 +193,9 @@ describe('can - synchronous rules', () => {
       permissions: ['test'] as const,
       user: { id: 1 },
     })
-      .defineRule<'test', { value?: string }>(
+      .defineRule(
         'test',
-        (user, ctx) => ctx?.value === 'expected',
+        (user, ctx: { value?: string } | undefined) => ctx?.value === 'expected',
       )
       .build()
 
@@ -288,9 +288,9 @@ describe('can - asynchronous rules', () => {
       permissions: ['post:delete'] as const,
       user: { id: 1, isAdmin: false },
     })
-      .defineRule<'post:delete', { force: boolean }>(
+      .defineRule(
         'post:delete',
-        async (user, ctx) => await Promise.resolve(user.isAdmin || (ctx?.force ?? false)),
+        async (user, ctx: { force: boolean } | undefined) => await Promise.resolve(user.isAdmin || (ctx?.force ?? false)),
       )
       .build()
 
@@ -359,9 +359,9 @@ describe('can - asynchronous rules', () => {
       permissions: ['resource:access'] as const,
       user: { id: 1 },
     })
-      .defineRule<'resource:access', Context>(
+      .defineRule(
         'resource:access',
-        async (user, ctx) => {
+        async (user, ctx: Context | undefined) => {
           await new Promise(resolve => setTimeout(resolve, 10))
           if (!ctx)
             return false
@@ -402,9 +402,9 @@ describe('can - asynchronous rules', () => {
       permissions: ['test'] as const,
       user: { id: 1 },
     })
-      .defineRule<'test', { flag: boolean }>(
+      .defineRule(
         'test',
-        async (user, ctx) => await Promise.resolve(ctx?.flag ?? false),
+        async (user, ctx: { flag: boolean } | undefined) => await Promise.resolve(ctx?.flag ?? false),
       )
       .build()
 
