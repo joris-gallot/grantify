@@ -1,7 +1,6 @@
-# grantify
+# Grantify
 
-Grantify is a lightweight, framework-agnostic access-control toolkit.
-It provides a simple core for managing roles, permissions, and access policies.
+Grantify is a lightweight, framework-agnostic access-control toolkit, it provides a simple and fully typed API for managing permissions.
 
 ## License
 MIT
