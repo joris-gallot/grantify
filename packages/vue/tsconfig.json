@@ -8,19 +8,14 @@
     "moduleResolution": "Bundler",
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "skipLibCheck": false,
-    "noEmit": true,
+    "skipLibCheck": true,
     "paths": {
       "@grantify/core": [
-        "../../packages/core/dist/index"
-      ],
-      "@grantify/vue": [
-        "../../packages/vue/dist/index"
+        "../core/src/index.ts"
       ]
-    }
+    },
   },
   "include": [
-    "**/*.ts",
-    "**/*.d.ts"
+    "**/*.ts"
   ]
 }

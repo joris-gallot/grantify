@@ -15,7 +15,8 @@
     "typecheck": "pnpm -r typecheck",
     "build": "pnpm -r build",
     "build:core": "pnpm --filter @grantify/core build",
-    "build:core:watch": "pnpm --filter @grantify/core build --watch"
+    "build:core:watch": "pnpm --filter @grantify/core build --watch",
+    "build:vue": "pnpm --filter @grantify/vue build"
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",

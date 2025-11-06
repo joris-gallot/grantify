@@ -10,7 +10,8 @@
   "dependencies": {
     "vue": "^3.5.22",
     "vue-router": "^4.6.3",
-    "@grantify/core": "workspace:*"
+    "@grantify/core": "workspace:*",
+    "@grantify/vue": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

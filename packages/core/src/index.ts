@@ -11,17 +11,17 @@ export interface GrantifyOptions<U = unknown, P extends readonly string[] = []> 
   permissions: P
 }
 
-type RuleMap<P extends string> = Record<P, {
+export type RuleMap<P extends string> = Record<P, {
   context: any
   async: boolean
 }>
 
-export interface GrantifyInstance<U, P extends string, RM extends RuleMap<P> = RuleMap<P>> {
+export interface GrantifyInstance<U, P extends string, RM extends RuleMap<P> = {}> {
   can: <PP extends P>(perm: PP, user?: U, ctx?: RM[PP]['context']) => RM[PP]['async'] extends true ? Promise<boolean> : boolean
   getRules: () => Prettify<RuleDef<U, P>>[]
 }
 
-export interface GrantifyBuilder<U = unknown, P extends string = string, RM extends RuleMap<P> = RuleMap<P>> {
+export interface GrantifyBuilder<U = unknown, P extends string = string, RM extends RuleMap<P> = {}> {
   defineRule: <PP extends P, C, R extends boolean | Promise<boolean>>(
     perm: PP,
     cb: (user: U, ctx?: C) => R,
