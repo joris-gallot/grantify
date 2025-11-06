@@ -2,24 +2,25 @@
   "compilerOptions": {
     "target": "ESNext",
     "lib": [
-      "ESNext"
+      "ESNext", "DOM"
     ],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "skipLibCheck": true,
+    "skipLibCheck": false,
     "noEmit": true,
     "paths": {
       "@grantify/core": [
-        "../../packages/core/src/index"
+        "../../packages/core/dist/index"
       ],
       "@grantify/vue": [
-        "../../packages/vue/src/index"
+        "../../packages/vue/dist/index"
       ]
     }
   },
   "include": [
-    "**/*.ts"
+    "**/*.ts",
+    "**/*.d.ts"
   ]
 }

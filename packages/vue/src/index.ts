@@ -1,10 +1,14 @@
-import type { GrantifyInstance, RuleMap } from '@grantify/core'
 import type { App, InjectionKey } from 'vue'
+import type { GrantifyVue } from './types'
 import { inject } from 'vue'
+import directive from './directive'
 
-const grantifyInstanceKey = Symbol('grantify-instance') as InjectionKey<GrantifyInstance<any, any, any>>
+export type * from './directive'
+export type * from './types'
 
-export function useGrantify() {
+const grantifyInstanceKey = Symbol('grantify-instance') as InjectionKey<GrantifyVue['instance']>
+
+export function useGrantify(): GrantifyVue['instance'] {
   const grantify = inject(grantifyInstanceKey)
 
   if (!grantify) {
@@ -14,10 +18,11 @@ export function useGrantify() {
   return grantify
 }
 
-export default <U, P extends string, RM extends RuleMap<P>>(grantifyInstance: GrantifyInstance<U, P, RM>) => {
+export default <G extends GrantifyVue['instance']>(grantifyInstance: G) => {
   return {
     install(app: App) {
       app.provide(grantifyInstanceKey, grantifyInstance)
+      app.directive('can', directive(grantifyInstance))
     },
   }
 }
