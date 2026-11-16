@@ -80,8 +80,8 @@ importers:
         specifier: 'catalog:'
         version: 22.18.13
       '@vitejs/plugin-vue':
-        specifier: ^6.0.1
-        version: 6.0.1(vite@7.1.12(@types/node@22.18.13)(jiti@2.6.1)(yaml@2.8.1))(vue@3.5.22(typescript@5.9.3))
+        specifier: ^6.0.11
+        version: 6.0.11(vite@7.1.12(@types/node@22.18.13)(jiti@2.6.1)(yaml@2.8.1))(vue@3.5.22(typescript@5.9.3))
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -509,8 +509,8 @@ packages:
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
 
-  '@rolldown/pluginutils@1.0.0-beta.29':
-    resolution: {integrity: sha512-NIJgOsMjbxAXvoGq/X0gD7VPMQ8j9g0BiDaNjVNVjvl+iKXxL3Jre0v31RmBYeLEmkbj2s02v8vFTbUXi5XS2Q==}
+  '@rolldown/pluginutils@1.1.1':
+    resolution: {integrity: sha512-glFIJDvLNDtJhT9qrMFWLPbvS+skxgt4L0K8Ei2YtnhPysAJnsI7nyxSJxKj4ADeKX0OLjC4ntRkwpLOoS3rwA==}
 
   '@rollup/plugin-alias@5.1.1':
     resolution: {integrity: sha512-PR9zDb+rOzkRb2VD+EuKB7UC41vU5DIwZ5qqCpk0KJudcWAyi8rvYOhS7+L5aZCspw1stTViLgN5v6FF1p5cgQ==}
@@ -778,12 +778,12 @@ packages:
     resolution: {integrity: sha512-tUFMXI4gxzzMXt4xpGJEsBsTox0XbNQ1y94EwlD/CuZwFcQP79xfQqMhau9HsRc/J0cAPA/HZt1dZPtGn9V/7w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@vitejs/plugin-vue@6.0.1':
-    resolution: {integrity: sha512-+MaE752hU0wfPFJEUAIxqw18+20euHHdxVtMvbFcOEpjEyfqXH/5DCoTHiVJ0J29EhTJdoTkjEv5YBKU9dnoTw==}
+  '@vitejs/plugin-vue@6.0.11':
+    resolution: {integrity: sha512-m48lskIUJGlB6qUiYhDMI8nd2ngeidz2U4nKTjqI13cFMu5rH8JeEILPkDtK9Fk/TjBA2pkj8AlbenqDaKu+ww==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
-      vite: ^5.0.0 || ^6.0.0 || ^7.0.0
-      vue: ^3.2.25
+      vite: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
+      vue: ^3.2.25 || ^3.6.0-rc.15
 
   '@vitest/coverage-istanbul@4.0.6':
     resolution: {integrity: sha512-8Hk2Uc3GyLUWcOlQDiTuxmYKbmsmOfavEJW9soW9CfOACPB6Mbm3qKWLrdXMYr+1fX/XtZYnZ8JxfELAGEZaVA==}
@@ -1342,6 +1342,7 @@ packages:
   eslint@9.39.0:
     resolution: {integrity: sha512-iy2GE3MHrYTL5lrCtMZ0X1KLEKKUjmK0kzwcnefhR66txcEmXZD2YWgR5GNdcEwkNx3a0siYkSvl0vIC+Svjmg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -2921,7 +2922,7 @@ snapshots:
 
   '@polka/url@1.0.0-next.29': {}
 
-  '@rolldown/pluginutils@1.0.0-beta.29': {}
+  '@rolldown/pluginutils@1.1.1': {}
 
   '@rollup/plugin-alias@5.1.1(rollup@4.52.5)':
     optionalDependencies:
@@ -3172,9 +3173,9 @@ snapshots:
       '@typescript-eslint/types': 8.46.2
       eslint-visitor-keys: 4.2.1
 
-  '@vitejs/plugin-vue@6.0.1(vite@7.1.12(@types/node@22.18.13)(jiti@2.6.1)(yaml@2.8.1))(vue@3.5.22(typescript@5.9.3))':
+  '@vitejs/plugin-vue@6.0.11(vite@7.1.12(@types/node@22.18.13)(jiti@2.6.1)(yaml@2.8.1))(vue@3.5.22(typescript@5.9.3))':
     dependencies:
-      '@rolldown/pluginutils': 1.0.0-beta.29
+      '@rolldown/pluginutils': 1.1.1
       vite: 7.1.12(@types/node@22.18.13)(jiti@2.6.1)(yaml@2.8.1)
       vue: 3.5.22(typescript@5.9.3)
 
